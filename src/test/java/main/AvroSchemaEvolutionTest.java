@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 public class AvroSchemaEvolutionTest {
   
   @Test
-  public void testAvroSchemaEvolution() throws IOException {
+  public void testAvroSchemaEvolution_1() throws IOException {
     Schema schemaA = new Schema.Parser().parse(new File(getClass().getClassLoader().getResource("schemaA.avsc").getFile()));
     Schema schemaB = new Schema.Parser().parse(new File(getClass().getClassLoader().getResource("schemaB.avsc").getFile()));
     File output = new File("output.avro");
@@ -61,7 +61,7 @@ public class AvroSchemaEvolutionTest {
     // Read records back
     DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>(schemaB);
     DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(output, datumReader);
-        
+
     record = null;
     long counter = 0;
     while (dataFileReader.hasNext()) {
@@ -78,5 +78,35 @@ public class AvroSchemaEvolutionTest {
     }
     dataFileReader.close();
     assertEquals(3, counter);
+  }
+
+  @Test
+  public void testAvroSchemaEvolution_2() throws IOException {
+    Schema schemaA = new Schema.Parser().parse(new File(getClass().getClassLoader().getResource("schemaA.avsc").getFile()));
+    Schema schemaB = new Schema.Parser().parse(new File(getClass().getClassLoader().getResource("schemaB.avsc").getFile()));
+    File output = new File("output.avro");
+
+    // Write record of B using schema B
+    GenericRecord record = new GenericData.Record(schemaB);
+    record.put("timestamp", 1d);
+    record.put("rider", "myRider1");
+    record.put("driver", "myDriver1");
+    record.put("evoluted_optional_union_field", "myEvolutedOptionalUnionField1");
+
+    DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(new GenericDatumWriter<GenericRecord>(schemaB));
+    dataFileWriter.create(schemaB, output);
+    dataFileWriter.append(record);
+    dataFileWriter.close();
+
+    // Write record of A using schema B
+    record = new GenericData.Record(schemaA);
+    record.put("timestamp", 2d);
+    record.put("rider", "myRider2");
+    record.put("driver", "myDriver2");
+
+    dataFileWriter = new DataFileWriter<GenericRecord>(new GenericDatumWriter<GenericRecord>(schemaB));
+    dataFileWriter.appendTo(output);
+    dataFileWriter.append(record);
+    dataFileWriter.close();
   }
 }
