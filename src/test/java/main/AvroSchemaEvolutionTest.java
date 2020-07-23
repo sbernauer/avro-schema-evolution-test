@@ -70,8 +70,9 @@ public class AvroSchemaEvolutionTest {
       assertEquals("myRider" + counter, record.get("rider").toString());
       assertEquals("myDriver" + counter, record.get("driver").toString());
       if (counter == 1) {
-        // FAILS expected: <myEvolutedOptionalUnionField1> but was: <null>
-        // assertEquals("myEvolutedOptionalUnionField" + counter, record.get("evoluted_optional_union_field"));
+        assertEquals("{\"type\":\"record\",\"name\":\"triprec\",\"fields\":[{\"name\":\"timestamp\",\"type\":\"double\"},{\"name\":\"rider\",\"type\":\"string\"},{\"name\":\"driver\",\"type\":\"string\"},{\"name\":\"evoluted_optional_union_field\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null}]}", record.getSchema().toString());
+        // FAILS WITH expected: <myEvolutedOptionalUnionField1> but was: <null>
+        assertEquals("myEvolutedOptionalUnionField" + counter, record.get("evoluted_optional_union_field"));
       }
       counter++;
     }
